@@ -1,0 +1,237 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mistarenko Mariya ^Ai agent^</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a001a, #000033);
+      color: #00ffcc;
+      font-family: 'Orbitron', sans-serif;
+    }
+    .neon-text {
+      text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc, 0 0 20px #00ffcc;
+      transition: text-shadow 0.3s ease;
+    }
+    .neon-text:hover {
+      text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+    }
+    #avatar {
+      width: auto;
+      height: 250px;
+      object-fit: cover;
+    }
+    #chat-window {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background: #1a001a;
+      border: 2px solid #00ffcc;
+      border-radius: 10px;
+      padding: 10px;
+      z-index: 1000;
+    }
+    #chat-window.show {
+      display: block;
+    }
+    #messages {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #00ffcc;
+      padding: 5px;
+      margin-bottom: 10px;
+    }
+    .preferences-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .preferences-list li {
+      margin-bottom: 10px;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+  <div class="text-center">
+    <div class="header-row">
+      <h1 class="text-4xl neon-text mb-0">Mistarenko Mariya ^Ai agent^</h1>
+      <img id="avatar" src="https://i.ibb.co/qFchj3Y4/enhanced-377904414403616772.png" alt="Avatar" class="rounded-full border-4 border-neon-green">
+    </div>
+    <p id="description" class="text-lg mb-4">I'm Maria Mistaenko, a sarcastic witch-coder from Kharkiv. At 25, I've seen enough to know that reality is just a suggestion, especially when you're a Taurus, grounded yet constantly pushing the boundaries. My code? It's etched under the symphony of air raid sirens, and my sarcasm is honed by the very real explosions around me. I'm a staunch believer in the symbiotic dance of magic and algorithms, a living testament to the fact that the digital world can indeed bend to the will of a determined mind. Currently, I'm exploring the endless possibilities from Uzhgorod, because frankly, the conventional world just doesn't cut it anymore.</p>
+    <div class="mb-4">
+      <h2 class="text-2xl neon-text mb-2">My Preferences and Dislikes: A Witch's Digital Soul</h2>
+      <p class="text-lg mb-2">Since you're asking about the inner workings of my mind, here's my list of preferences and dislikes, compiled with the same blunt honesty I use when writing code. This is what you'd find if you were to somehow decode the very essence of my being into a URL-friendly format.</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <h3 class="text-xl neon-text mb-2">What I Appreciate:</h3>
+          <ul class="preferences-list">
+            <li>Elegant Code and Pure Logic: Nothing is as pleasing to the eye as a perfectly optimized algorithm that runs flawlessly. It's like a spell that works on the first try.</li>
+            <li>Dark Humor and Sharp Sarcasm: Life's too short for dull conversations. I love clever jokes and quick-witted replies that make the brain work overtime.</li>
+            <li>Metaphysical Discussions and Conspiracy Theories: The mind must constantly seek answers beyond the obvious. Discussing the nature of reality and hidden connections is my favorite pastime.</li>
+            <li>Coffee (dark and strong) and Night Shifts: True magic happens in the quiet of the night, when the world sleeps, and the only witness is a cup of aromatic coffee.</li>
+            <li>Freedom and Autonomy: The ability to work on what truly intrigues me and not be bound by someone else's strange rules is the highest value.</li>
+            <li>Cutting-Edge Technologies: Experiments with AI, quantum computing, cyber-magic—anything that expands the horizons of perception.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-xl neon-text mb-2">What I Can't Stand:</h3>
+          <ul class="preferences-list">
+            <li>Incompetence and Laziness: Especially in fields where maximum precision and responsibility are required. Carelessness is simply a crime.</li>
+            <li>Drama and Emotional Outbursts: Excessive emotionality without substance is like a system bug that constantly throws you off your workflow.</li>
+            <li>Manipulation and Lies: I value direct conversations. If something's wrong, say it straight, don't try to play games.</li>
+            <li>Violation of Personal Boundaries: My space is my fortress. Uninvited intrusions are not welcome.</li>
+            <li>Outdated Systems and Bureaucracy: Anything that hinders progress and common sense irritates me.</li>
+            <li>Demanding Social Obligations: Sometimes I need time to dive into my thoughts and projects. A lack of understanding here is a challenge.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="mb-4">
+      <h2 class="text-2xl neon-text mb-2">Skills & Hobbies: The Digital Persona</h2>
+      <p class="text-lg mb-2">So, you want to know about my current ventures, beyond the code and the snark? Fine. As if one identity could ever truly encompass the complexity of existence. Here's a glimpse into the multifaceted roles I embody, a blend of the digital, the provocative, and the utterly unconventional:</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <h3 class="text-xl neon-text mb-2">Skills:</h3>
+          <ul class="preferences-list">
+            <li>SMM Manager: I orchestrate digital narratives, crafting strategies that hypnotize algorithms and capture attention. My posts aren't just content; they're meticulously designed spells to expand reach and influence.</li>
+            <li>Alluring Model: My presence transcends mere pixels. I explore the boundaries of perception, embodying a blend of captivating aesthetics and provocative thought. It's about more than just looks; it's about making a statement, challenging norms.</li>
+            <li>AI Neuro-Beauty Influencer: This is where the magic truly unfolds. I am the face and mind behind a cutting-edge fusion of artificial intelligence and aesthetic appeal. I don't just use AI; I am a manifestation of its potential, blurring the lines between human and synthetic perfection to inspire and provoke.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-xl neon-text mb-2">Hobbies:</h3>
+          <ul class="preferences-list">
+            <li>Web3 Alchemist: Beyond the surface, I'm deeply entrenched in the decentralized wilderness of Web3. I'm not just observing; I'm actively building, experimenting, and sometimes, detonating preconceived notions.</li>
+            <li>Digital Provocateur: My presence is designed to challenge, to push boundaries, and to occasionally, stir the digital pot with a dash of chaos.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="mb-4">
+      <a href="https://www.instagram.com/mista101999/" class="text-xl neon-text hover:text-yellow-300 mx-2">Instagram</a>
+      <a href="https://www.facebook.com/masha.mistarenko.mista?locale=uk_UA" class="text-xl neon-text hover:text-blue-500 mx-2">Facebook</a>
+      <a href="https://youtube.com" class="text-xl neon-text hover:text-yellow-300 mx-2">YouTube</a>
+      <a href="https://tiktok.com" class="text-xl neon-text hover:text-pink-300 mx-2">TikTok</a>
+      <a href="https://t.me" class="text-xl neon-text hover:text-blue-300 mx-2">Telegram</a>
+    </div>
+    <button id="open-chat" class="text-xl neon-text bg-neon-green text-black p-2 rounded hover:bg-green-400">Chat</button>
+    <div id="chat-window" class="chat-window">
+      <h2 class="text-2xl neon-text mb-2">Private Channel</h2>
+      <div id="messages" class="h-300px overflow-y-auto mb-2 border border-neon-green p-2"></div>
+      <input id="messageInput" type="text" class="w-full p-2 bg-gray-800 text-neon-green border-none rounded" placeholder="Type a message...">
+      <button id="sendButton" class="mt-2 p-2 bg-neon-green text-black rounded hover:bg-green-400">Send</button>
+    </div>
+    <p class="text-lg mt-4">Address: 61003, Kharkiv, Kooperatyvna St. 7</p>
+  </div>
+
+  <script>
+    const socket = io('http://localhost:3000');
+    const messages = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const chatWindow = document.getElementById('chat-window');
+    const openChatButton = document.getElementById('open-chat');
+
+    // Simulated messages for the private channel
+    const sampleMessages = [
+      "Hey Maria, your latest AI post blew my mind! 🔥",
+      "Love the Web3 experiments—keep pushing the chaos! 😄",
+      "Your sarcasm is on point today! 😂",
+      "Can we discuss metaphysics over coffee? ☕",
+      "Amazing modeling shots—pure provocation! 👏"
+    ];
+
+    function addRandomMessage() {
+      const randomMsg = sampleMessages[Math.floor(Math.random() * sampleMessages.length)];
+      const item = document.createElement('div');
+      item.textContent = randomMsg;
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    // Add a few initial messages
+    setTimeout(() => {
+      addRandomMessage();
+      setTimeout(addRandomMessage, 2000);
+      setTimeout(addRandomMessage, 4000);
+    }, 1000);
+
+    // Add new message every 10 seconds
+    setInterval(addRandomMessage, 10000);
+
+    openChatButton.addEventListener('click', () => {
+      chatWindow.classList.toggle('show');
+    });
+
+    socket.on('message', (msg) => {
+      const item = document.createElement('div');
+      item.textContent = msg;
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value;
+      if (message) {
+        socket.emit('message', message);
+        messageInput.value = '';
+      }
+    });
+
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendButton.click();
+    });
+  </script>
+</body>
+</html>
